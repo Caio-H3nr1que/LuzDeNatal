@@ -1,0 +1,68 @@
+
+#define pinSOM 3
+#define pinRELE 12
+#define pinACOP 2
+
+#define tempoEntrePalmas 150 // milisegundos
+#define tempoMaximoEntrePalmas 500 //milisengudos
+
+int contaPalmas = 0;
+unsigned long tempoEspera = 0;
+unsigned long tempoEsperaEntrePalmas = 0;
+
+void executarAcao();
+
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+
+pinMode(pinSOM, INPUT);
+pinMode(pinRELE, OUTPUT);
+pinMode(pinACOP, OUTPUT);
+
+digitalWrite(pinRELE, LOW);
+digitalWrite(pinACOP, LOW);
+
+  Serial.println("Setup concluído!");
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  static int sensorSomAnt;
+  int sensorSom=digitalRead(pinSOM);
+
+    if ((sensorSom==HIGH) && (sensorSomAnt ==LOW)) {
+      Serial.println("detectou");
+  
+    if ((millis() - tempoEspera) > tempoEntrePalmas) {
+      tempoEspera = millis();
+      tempoEsperaEntrePalmas = millis();
+      contaPalmas++;
+    }
+  }
+  sensorSomAnt = sensorSom;
+  if ((contaPalmas != 0) && ((millis() - tempoEsperaEntrePalmas) > tempoMaximoEntrePalmas)){
+    executarAcao();
+    contaPalmas = 0;
+    tempoEsperaEntrePalmas = millis();
+  }
+}
+
+void executarAcao(){
+  switch(contaPalmas){
+    case 3:
+      digitalWrite(pinACOP,HIGH);
+      delay(200);
+      digitalWrite(pinACOP,LOW);
+      Serial.println("Duas Palmas, trocando o modo do pisca");
+    break;
+    case 2:
+      digitalWrite(pinRELE, !digitalRead(pinRELE));
+      Serial.println("Três palmas, trocando estado do rele");
+      break;
+    default:
+      Serial.println("A quantidade de palmas foi de: ");
+      Serial.println(contaPalmas);
+  }  
+}
